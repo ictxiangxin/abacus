@@ -1,4 +1,4 @@
-const DIGEST_INIT_VALUE_LENGTH: usize = 8;
+use crate::algorithm::digest::sha2::sha2_constant::SHA2_256_DIGEST_INIT_VALUE_LENGTH;
 
 pub enum SHA2_256Type {
     SHA224,
@@ -6,7 +6,7 @@ pub enum SHA2_256Type {
 }
 
 impl SHA2_256Type {
-    pub fn init_value(&self) -> [u32; DIGEST_INIT_VALUE_LENGTH] {
+    pub fn init_value(&self) -> [u32; SHA2_256_DIGEST_INIT_VALUE_LENGTH] {
         match self {
             SHA2_256Type::SHA224 => [
                 0xc1059ed8,

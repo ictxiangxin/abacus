@@ -1,8 +1,5 @@
 use std::convert::TryInto;
-
-pub const DIGEST_BYTE_LENGTH: usize = 32;
-const BUFFER_BYTE_LENGTH: usize = 64;
-const DATA_BYTE_MAX_LENGTH: usize = 8;
+use crate::algorithm::digest::sm3::sm3_constant::{SM3_BUFFER_BYTE_LENGTH, SM3_DIGEST_BYTE_LENGTH, SM3_DATA_BYTE_MAX_LENGTH};
 
 #[inline(always)]
 fn ff_0_16(x: u32, y: u32, z: u32) -> u32 {
@@ -40,7 +37,7 @@ fn expand(a: u32, b: u32, c: u32, d: u32, e: u32) -> u32 {
 }
 
 #[inline(always)]
-fn big_endian_word(buffer: &[u8; BUFFER_BYTE_LENGTH], i: usize) -> u32 {
+fn big_endian_word(buffer: &[u8; SM3_BUFFER_BYTE_LENGTH], i: usize) -> u32 {
     u32::from_be_bytes(buffer[(i * 4)..(i * 4 + 4)].try_into().unwrap())
 }
 
@@ -71,7 +68,7 @@ fn round_16_64(x1: u32, x2: &mut u32, x3: u32, x4: &mut u32, x5: u32, x6: &mut u
 }
 
 #[inline(always)]
-fn fill_to_bytes(digest_bytes: &mut [u8; DIGEST_BYTE_LENGTH], x: u32, index: usize) {
+fn fill_to_bytes(digest_bytes: &mut [u8; SM3_DIGEST_BYTE_LENGTH], x: u32, index: usize) {
     let word_bytes = x.to_be_bytes();
     digest_bytes[index * 4 + 0] = word_bytes[0];
     digest_bytes[index * 4 + 1] = word_bytes[1];
@@ -80,16 +77,16 @@ fn fill_to_bytes(digest_bytes: &mut [u8; DIGEST_BYTE_LENGTH], x: u32, index: usi
 }
 
 #[inline(always)]
-fn put_data_length(buffer: &mut [u8; BUFFER_BYTE_LENGTH], length: u64) {
+fn put_data_length(buffer: &mut [u8; SM3_BUFFER_BYTE_LENGTH], length: u64) {
     let length_bytes = length.to_be_bytes();
-    buffer[BUFFER_BYTE_LENGTH - 1] = length_bytes[7];
-    buffer[BUFFER_BYTE_LENGTH - 2] = length_bytes[6];
-    buffer[BUFFER_BYTE_LENGTH - 3] = length_bytes[5];
-    buffer[BUFFER_BYTE_LENGTH - 4] = length_bytes[4];
-    buffer[BUFFER_BYTE_LENGTH - 5] = length_bytes[3];
-    buffer[BUFFER_BYTE_LENGTH - 6] = length_bytes[2];
-    buffer[BUFFER_BYTE_LENGTH - 7] = length_bytes[1];
-    buffer[BUFFER_BYTE_LENGTH - 8] = length_bytes[0];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 1] = length_bytes[7];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 2] = length_bytes[6];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 3] = length_bytes[5];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 4] = length_bytes[4];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 5] = length_bytes[3];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 6] = length_bytes[2];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 7] = length_bytes[1];
+    buffer[SM3_BUFFER_BYTE_LENGTH - 8] = length_bytes[0];
 }
 
 pub struct SM3Digest {
@@ -122,8 +119,8 @@ impl SM3Digest {
         instance
     }
 
-    pub fn get_digest_bytes(&mut self) -> [u8; DIGEST_BYTE_LENGTH] {
-        let mut digest_bytes = [0; DIGEST_BYTE_LENGTH];
+    pub fn get_digest_bytes(&mut self) -> [u8; SM3_DIGEST_BYTE_LENGTH] {
+        let mut digest_bytes = [0; SM3_DIGEST_BYTE_LENGTH];
         fill_to_bytes(&mut digest_bytes, self.a, 0);
         fill_to_bytes(&mut digest_bytes, self.b, 1);
         fill_to_bytes(&mut digest_bytes, self.c, 2);
@@ -137,14 +134,14 @@ impl SM3Digest {
 
     pub fn compute_digest(&mut self) {
         let remains_data_length = self.remains_data.len();
-        let min_padding_byte_length = remains_data_length + DATA_BYTE_MAX_LENGTH + 1;
-        let mut buffer: [u8; BUFFER_BYTE_LENGTH] = [0; BUFFER_BYTE_LENGTH];
+        let min_padding_byte_length = remains_data_length + SM3_DATA_BYTE_MAX_LENGTH + 1;
+        let mut buffer: [u8; SM3_BUFFER_BYTE_LENGTH] = [0; SM3_BUFFER_BYTE_LENGTH];
         for i in 0..self.remains_data.len() {
             buffer[i] = self.remains_data[i];
         }
         self.remains_data.clear();
         buffer[remains_data_length] = 0x80;
-        if min_padding_byte_length > BUFFER_BYTE_LENGTH {
+        if min_padding_byte_length > SM3_BUFFER_BYTE_LENGTH {
             self.update(&buffer);
             buffer.fill(0x00);
             put_data_length(&mut buffer, self.total_length);
@@ -160,28 +157,28 @@ impl SM3Digest {
         self.total_length += data_length;
         let remains_data_length = self.remains_data.len();
         let mut offset: usize = 0;
-        if remains_data_length > 0 && remains_data_length + data.len() >= BUFFER_BYTE_LENGTH {
-            offset = BUFFER_BYTE_LENGTH - remains_data_length;
-            let mut buffer: [u8; BUFFER_BYTE_LENGTH] = [0; BUFFER_BYTE_LENGTH];
+        if remains_data_length > 0 && remains_data_length + data.len() >= SM3_BUFFER_BYTE_LENGTH {
+            offset = SM3_BUFFER_BYTE_LENGTH - remains_data_length;
+            let mut buffer: [u8; SM3_BUFFER_BYTE_LENGTH] = [0; SM3_BUFFER_BYTE_LENGTH];
             for i in 0..self.remains_data.len() {
                 buffer[i] = self.remains_data[i];
             }
             self.remains_data.clear();
-            for i in remains_data_length..BUFFER_BYTE_LENGTH {
+            for i in remains_data_length..SM3_BUFFER_BYTE_LENGTH {
                 buffer[i] = data[i - remains_data_length];
             }
             self.update(&buffer);
         }
-        let buffer_count = (data.len() - offset) / BUFFER_BYTE_LENGTH;
+        let buffer_count = (data.len() - offset) / SM3_BUFFER_BYTE_LENGTH;
         for i in 0..buffer_count  {
-            self.update(data[(i * BUFFER_BYTE_LENGTH + offset)..(i * BUFFER_BYTE_LENGTH + offset + BUFFER_BYTE_LENGTH)].try_into().unwrap());
+            self.update(data[(i * SM3_BUFFER_BYTE_LENGTH + offset)..(i * SM3_BUFFER_BYTE_LENGTH + offset + SM3_BUFFER_BYTE_LENGTH)].try_into().unwrap());
         }
-        for i in (buffer_count * BUFFER_BYTE_LENGTH + offset)..data.len() {
+        for i in (buffer_count * SM3_BUFFER_BYTE_LENGTH + offset)..data.len() {
             self.remains_data.push(data[i]);
         }
     }
 
-    fn update(&mut self, buffer: &[u8; BUFFER_BYTE_LENGTH]) {
+    fn update(&mut self, buffer: &[u8; SM3_BUFFER_BYTE_LENGTH]) {
         let mut a = self.a;
         let mut b = self.b;
         let mut c = self.c;
