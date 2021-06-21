@@ -1,5 +1,5 @@
 use std::convert::TryInto;
-use super::sha256_type::SHA256Type;
+use super::sha2_256_type::SHA2_256Type;
 
 pub const DIGEST_BYTE_LENGTH: usize = 32;
 const BUFFER_BYTE_LENGTH: usize = 64;
@@ -74,7 +74,7 @@ fn put_data_length(buffer: &mut [u8; BUFFER_BYTE_LENGTH], length: u64) {
     buffer[BUFFER_BYTE_LENGTH - 8] = length_bytes[0];
 }
 
-pub struct SHA256Digest {
+pub struct SHA2_256Digest {
     a: u32,
     b: u32,
     c: u32,
@@ -87,10 +87,10 @@ pub struct SHA256Digest {
     remains_data: Vec<u8>,
 }
 
-impl SHA256Digest {
-    pub fn new(sha256_type: SHA256Type) -> SHA256Digest {
+impl SHA2_256Digest {
+    pub fn new(sha256_type: SHA2_256Type) -> SHA2_256Digest {
         let init_value = sha256_type.init_value();
-        let instance = SHA256Digest {
+        let instance = SHA2_256Digest {
             a: init_value[0],
             b: init_value[1],
             c: init_value[2],

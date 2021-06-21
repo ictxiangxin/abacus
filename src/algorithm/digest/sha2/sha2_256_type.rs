@@ -1,14 +1,14 @@
 const DIGEST_INIT_VALUE_LENGTH: usize = 8;
 
-pub enum SHA256Type {
+pub enum SHA2_256Type {
     SHA224,
     SHA256,
 }
 
-impl SHA256Type {
+impl SHA2_256Type {
     pub fn init_value(&self) -> [u32; DIGEST_INIT_VALUE_LENGTH] {
         match self {
-            SHA256Type::SHA224 => [
+            SHA2_256Type::SHA224 => [
                 0xc1059ed8,
                 0x367cd507,
                 0x3070dd17,
@@ -18,7 +18,7 @@ impl SHA256Type {
                 0x64f98fa7,
                 0xbefa4fa4,
             ],
-            SHA256Type::SHA256 => [
+            SHA2_256Type::SHA256 => [
                 0x6a09e667,
                 0xbb67ae85,
                 0x3c6ef372,
