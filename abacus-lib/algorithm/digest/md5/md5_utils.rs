@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
-use super::md5_digest::{MD5_DIGEST_BYTE_LENGTH, MD5Digest};
+use super::md5_digest::MD5Digest;
+use super::md5_constant::MD5_DIGEST_BYTE_LENGTH;
 
 const FILE_READ_SIZE: usize = 0x40000;
 

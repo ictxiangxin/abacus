@@ -1,4 +1,4 @@
-use crate::algorithm::digest::sha2::sha2_constant::SHA2_256_DIGEST_INIT_VALUE_LENGTH;
+use super::sha2_constant::SHA2_256_DIGEST_INIT_VALUE_LENGTH;
 
 pub enum SHA2_256Type {
     SHA224,

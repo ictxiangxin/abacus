@@ -1,9 +1,9 @@
 use std::fs::File;
 use std::io::Read;
 use super::sha2_256_type::SHA2_256Type;
-use crate::algorithm::digest::sha2::sha2_256_digest::SHA2_256Digest;
-use crate::algorithm::digest::sha2::sha2_224_digest::SHA2_224Digest;
-use crate::algorithm::digest::sha2::sha2_constant::{SHA2_256_DIGEST_BYTE_LENGTH, SHA2_224_DIGEST_BYTE_LENGTH};
+use super::sha2_256_digest::SHA2_256Digest;
+use super::sha2_224_digest::SHA2_224Digest;
+use super::sha2_constant::{SHA2_256_DIGEST_BYTE_LENGTH, SHA2_224_DIGEST_BYTE_LENGTH};
 
 const FILE_READ_SIZE: usize = 0x40000;
 

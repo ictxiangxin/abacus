@@ -1,5 +1,5 @@
 use std::convert::TryInto;
-use crate::algorithm::digest::sm3::sm3_constant::{SM3_BUFFER_BYTE_LENGTH, SM3_DIGEST_BYTE_LENGTH, SM3_DATA_BYTE_MAX_LENGTH};
+use super::sm3_constant::{SM3_BUFFER_BYTE_LENGTH, SM3_DIGEST_BYTE_LENGTH, SM3_DATA_BYTE_MAX_LENGTH};
 
 #[inline(always)]
 fn ff_0_16(x: u32, y: u32, z: u32) -> u32 {

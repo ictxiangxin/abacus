@@ -1,5 +1,5 @@
 use std::convert::TryInto;
-use crate::algorithm::digest::md5::md5_constant::{MD5_BUFFER_BYTE_LENGTH, MD5_DIGEST_BYTE_LENGTH, MD5_DATA_BYTE_MAX_LENGTH};
+use super::md5_constant::{MD5_BUFFER_BYTE_LENGTH, MD5_DIGEST_BYTE_LENGTH, MD5_DATA_BYTE_MAX_LENGTH};
 
 #[inline(always)]
 fn little_endian_word(buffer: &[u8; MD5_BUFFER_BYTE_LENGTH], i: usize) -> u32 {

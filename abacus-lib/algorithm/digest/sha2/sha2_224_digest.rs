@@ -1,7 +1,7 @@
 use std::convert::TryInto;
-use crate::algorithm::digest::sha2::sha2_256_base_digest::SHA2_256BaseDigest;
-use crate::algorithm::digest::sha2::sha2_256_type::SHA2_256Type;
-use crate::algorithm::digest::sha2::sha2_constant::SHA2_224_DIGEST_BYTE_LENGTH;
+use super::sha2_256_base_digest::SHA2_256BaseDigest;
+use super::sha2_256_type::SHA2_256Type;
+use super::sha2_constant::SHA2_224_DIGEST_BYTE_LENGTH;
 
 pub struct SHA2_224Digest {
     sha2_256_base_digest: SHA2_256BaseDigest

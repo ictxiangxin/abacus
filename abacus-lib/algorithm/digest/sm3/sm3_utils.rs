@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Read;
-use super::sm3_digest::{SM3_DIGEST_BYTE_LENGTH, SM3Digest};
+use super::sm3_digest::SM3Digest;
+use super::sm3_constant::SM3_DIGEST_BYTE_LENGTH;
 
 const FILE_READ_SIZE: usize = 0x40000;
 
