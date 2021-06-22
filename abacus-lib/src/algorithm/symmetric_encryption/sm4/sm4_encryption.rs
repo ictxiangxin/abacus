@@ -1,6 +1,6 @@
 use std::convert::TryInto;
 use std::intrinsics::exact_div;
-use super::sm4_constant::{S_TABLE, S_LINEAR_TABLE, FK, CK};
+use super::sm4_constant::{SM4_KEY_BYTE_LENGTH, SM4_SUB_KEY_BYTE_LENGTH, SM4_BLOCK_BYTE_LENGTH, S_TABLE, T_TABLE, FK, CK};
 
 fn edge_t(x: u32) -> u32 {
     let xx = x.to_be_bytes();
@@ -10,16 +10,16 @@ fn edge_t(x: u32) -> u32 {
 
 fn main_t(x: u32) -> u32 {
     let xx = x.to_be_bytes();
-    S_LINEAR_TABLE[xx[0]] ^ S_LINEAR_TABLE[xx[1]].rotate_left(24) ^ S_LINEAR_TABLE[xx[2]].rotate_left(16) ^ S_LINEAR_TABLE[xx[3]].rotate_left(8)
+    T_TABLE[xx[0]] ^ T_TABLE[xx[1]].rotate_left(24) ^ T_TABLE[xx[2]].rotate_left(16) ^ T_TABLE[xx[3]].rotate_left(8)
 }
 
 #[inline(always)]
-fn big_endian_word(buffer: &[u8; 16], i: usize) -> u32 {
+fn big_endian_word(buffer: &[u8; SM4_BLOCK_BYTE_LENGTH], i: usize) -> u32 {
     u32::from_be_bytes(buffer[(i * 4)..(i * 4 + 4)].try_into().unwrap())
 }
 
 #[inline(always)]
-fn big_endian_bytes(w: u32, bytes: &mut [u8; 16], index: usize) {
+fn big_endian_bytes(w: u32, bytes: &mut [u8; SM4_BLOCK_BYTE_LENGTH], index: usize) {
     let ww = w.to_be_bytes();
     bytes[index * 4 + 0] = ww[0];
     bytes[index * 4 + 1] = ww[1];
@@ -52,14 +52,14 @@ impl SM4Encryption {
         instance
     }
 
-    fn generate_sub_key(key: &[u8; 16]) -> [u32; 32] {
+    fn generate_sub_key(key: &[u8; SM4_KEY_BYTE_LENGTH]) -> [u32; SM4_SUB_KEY_BYTE_LENGTH] {
         let mut k : [u32; 4] = [0; 4];
-        let mut sub_key: [u32; 32] = [0; 32];
+        let mut sub_key: [u32; 32] = [0; SM4_SUB_KEY_BYTE_LENGTH];
         k[0] = big_endian_word(key, 0) ^ FK[0];
         k[1] = big_endian_word(key, 1) ^ FK[1];
         k[2] = big_endian_word(key, 2) ^ FK[2];
         k[3] = big_endian_word(key, 3) ^ FK[3];
-        for i in 0..32 {
+        for i in 0..SM4_SUB_KEY_BYTE_LENGTH {
             let x = k[(i + 1) % 4] ^ k[(i + 2) % 4] ^ k[(i + 3) % 4] ^ CK[i];
             let xx = x.to_be_bytes();
             let t = u32::from_be_bytes([S_TABLE[xx[0]], S_TABLE[xx[1]], S_TABLE[xx[2]], S_TABLE[xx[3]]]);
@@ -69,7 +69,11 @@ impl SM4Encryption {
         sub_key
     }
 
-    fn encrypt(data: &[u8; 16], sub_keys: [u32; 32]) -> [u8; 16] {
+    pub fn encrypt_ecb(source_data: &[u8], destination_data: &mut [u8], key: [u8; SM4_KEY_BYTE_LENGTH]) {
+        let sub_key = SM4Encryption::generate_sub_key(key);
+    }
+
+    fn encrypt_block(data: &[u8; SM4_BLOCK_BYTE_LENGTH], sub_keys: [u32; SM4_SUB_KEY_BYTE_LENGTH]) -> [u8; SM4_BLOCK_BYTE_LENGTH] {
         let mut w0 = big_endian_word(data, 0);
         let mut w1 = big_endian_word(data, 1);
         let mut w2 = big_endian_word(data, 2);
@@ -90,7 +94,7 @@ impl SM4Encryption {
         result
     }
 
-    fn decrypt(data: &[u8; 16], sub_keys: [u32; 32]) -> [u8; 16] {
+    fn decrypt_block(data: &[u8; SM4_BLOCK_BYTE_LENGTH], sub_keys: [u32; SM4_SUB_KEY_BYTE_LENGTH]) -> [u8; SM4_BLOCK_BYTE_LENGTH] {
         let mut w0 = big_endian_word(data, 0);
         let mut w1 = big_endian_word(data, 1);
         let mut w2 = big_endian_word(data, 2);
