@@ -1,5 +1,5 @@
-pub const SM4_KEY_BYTE_LENGTH: usize = 16;
-pub const SM4_SUB_KEY_BYTE_LENGTH: usize = 32;
+pub const KEY_BYTE_LENGTH: usize = 16;
+pub const SM4_KEY_BYTE_LENGTH: usize = 32;
 pub const SM4_BLOCK_BYTE_LENGTH: usize = 16;
 
 pub const SM4_S: [u8; 256] = [
