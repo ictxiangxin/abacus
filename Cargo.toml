@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "abacus-cli",
+    "abacus-lib"
+]
