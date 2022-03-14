@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use super::sm4_constant::{KEY_BYTE_LENGTH, SM4_KEY_BYTE_LENGTH, SM4_BLOCK_BYTE_LENGTH, SM4_S, SM4_S_BOX_T0, SM4_S_BOX_T1, SM4_S_BOX_T2, SM4_S_BOX_T3, FK, CK};
 
 #[inline(always)]
@@ -72,12 +71,12 @@ impl SM4Encryption {
         self.sm4_key = SM4Encryption::generate_sm4_key(key);
     }
 
-    pub fn encrypt(&self, data: &[u8; SM4_BLOCK_BYTE_LENGTH]) -> [u8; SM4_BLOCK_BYTE_LENGTH] {
-        SM4Encryption::encrypt_block(data, self.sm4_key)
+    pub fn encrypt(&self, origin_data: &[u8; SM4_BLOCK_BYTE_LENGTH], enciphered_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH]) {
+        SM4Encryption::encrypt_block(origin_data, enciphered_data, self.sm4_key)
     }
 
-    pub fn decrypt(&self, data: &[u8; SM4_BLOCK_BYTE_LENGTH]) -> [u8; SM4_BLOCK_BYTE_LENGTH] {
-        SM4Encryption::decrypt_block(data, self.sm4_key)
+    pub fn decrypt(&self, enciphered_data: &[u8; SM4_BLOCK_BYTE_LENGTH], origin_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH]) {
+        SM4Encryption::decrypt_block(enciphered_data, origin_data, self.sm4_key)
     }
 
     fn generate_sm4_key(key: [u8; KEY_BYTE_LENGTH]) -> [u32; SM4_KEY_BYTE_LENGTH] {
@@ -97,11 +96,11 @@ impl SM4Encryption {
         sm4_key
     }
 
-    fn encrypt_block(data: &[u8; SM4_BLOCK_BYTE_LENGTH], sm4_key: [u32; SM4_KEY_BYTE_LENGTH]) -> [u8; SM4_BLOCK_BYTE_LENGTH] {
-        let mut w0 = big_endian_word(data, 0);
-        let mut w1 = big_endian_word(data, 1);
-        let mut w2 = big_endian_word(data, 2);
-        let mut w3 = big_endian_word(data, 3);
+    fn encrypt_block(origin_data: &[u8; SM4_BLOCK_BYTE_LENGTH], enciphered_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH], sm4_key: [u32; SM4_KEY_BYTE_LENGTH]) {
+        let mut w0 = big_endian_word(origin_data, 0);
+        let mut w1 = big_endian_word(origin_data, 1);
+        let mut w2 = big_endian_word(origin_data, 2);
+        let mut w3 = big_endian_word(origin_data, 3);
         round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[00], sm4_key[01], sm4_key[02], sm4_key[03]);
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[04], sm4_key[05], sm4_key[06], sm4_key[07]);
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[08], sm4_key[09], sm4_key[10], sm4_key[11]);
@@ -110,19 +109,17 @@ impl SM4Encryption {
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[20], sm4_key[21], sm4_key[22], sm4_key[23]);
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[24], sm4_key[25], sm4_key[26], sm4_key[27]);
         round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[28], sm4_key[29], sm4_key[30], sm4_key[31]);
-        let mut result: [u8; 16] = [0; 16];
-        big_endian_bytes(w3, &mut result, 0);
-        big_endian_bytes(w2, &mut result, 1);
-        big_endian_bytes(w1, &mut result, 2);
-        big_endian_bytes(w0, &mut result, 3);
-        result
+        big_endian_bytes(w3, enciphered_data, 0);
+        big_endian_bytes(w2, enciphered_data, 1);
+        big_endian_bytes(w1, enciphered_data, 2);
+        big_endian_bytes(w0, enciphered_data, 3);
     }
 
-    fn decrypt_block(data: &[u8; SM4_BLOCK_BYTE_LENGTH], sm4_key: [u32; SM4_KEY_BYTE_LENGTH]) -> [u8; SM4_BLOCK_BYTE_LENGTH] {
-        let mut w0 = big_endian_word(data, 0);
-        let mut w1 = big_endian_word(data, 1);
-        let mut w2 = big_endian_word(data, 2);
-        let mut w3 = big_endian_word(data, 3);
+    fn decrypt_block(enciphered_data: &[u8; SM4_BLOCK_BYTE_LENGTH], origin_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH], sm4_key: [u32; SM4_KEY_BYTE_LENGTH]) {
+        let mut w0 = big_endian_word(enciphered_data, 0);
+        let mut w1 = big_endian_word(enciphered_data, 1);
+        let mut w2 = big_endian_word(enciphered_data, 2);
+        let mut w3 = big_endian_word(enciphered_data, 3);
         round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[31], sm4_key[30], sm4_key[29], sm4_key[28]);
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[27], sm4_key[26], sm4_key[25], sm4_key[24]);
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[23], sm4_key[22], sm4_key[21], sm4_key[20]);
@@ -131,11 +128,9 @@ impl SM4Encryption {
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[11], sm4_key[10], sm4_key[09], sm4_key[08]);
         round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[07], sm4_key[06], sm4_key[05], sm4_key[04]);
         round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[03], sm4_key[02], sm4_key[01], sm4_key[00]);
-        let mut result: [u8; 16] = [0; 16];
-        big_endian_bytes(w3, &mut result, 0);
-        big_endian_bytes(w2, &mut result, 1);
-        big_endian_bytes(w1, &mut result, 2);
-        big_endian_bytes(w0, &mut result, 3);
-        result
+        big_endian_bytes(w3, origin_data, 0);
+        big_endian_bytes(w2, origin_data, 1);
+        big_endian_bytes(w1, origin_data, 2);
+        big_endian_bytes(w0, origin_data, 3);
     }
 }

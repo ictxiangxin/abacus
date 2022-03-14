@@ -1,6 +1,7 @@
 pub const KEY_BYTE_LENGTH: usize = 16;
 pub const SM4_KEY_BYTE_LENGTH: usize = 32;
 pub const SM4_BLOCK_BYTE_LENGTH: usize = 16;
+pub const SM4_DATA_BYTE_MAX_LENGTH: usize = 8;
 
 pub const SM4_S: [u8; 256] = [
     0xD6, 0x90, 0xE9, 0xFE, 0xCC, 0xE1, 0x3D, 0xB7, 0x16, 0xB6, 0x14, 0xC2, 0x28, 0xFB, 0x2C, 0x05,

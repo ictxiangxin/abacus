@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use super::sm3_constant::{SM3_BUFFER_BYTE_LENGTH, SM3_DIGEST_BYTE_LENGTH, SM3_DATA_BYTE_MAX_LENGTH};
 
 #[inline(always)]

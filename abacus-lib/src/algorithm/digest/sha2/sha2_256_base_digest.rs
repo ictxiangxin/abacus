@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use super::sha2_256_type::SHA2_256Type;
 use super::sha2_constant::{SHA2_256_BUFFER_BYTE_LENGTH, SHA2_256_DIGEST_BYTE_LENGTH, SHA2_256_DATA_BYTE_MAX_LENGTH};
 

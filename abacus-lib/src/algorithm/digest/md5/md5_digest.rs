@@ -1,4 +1,3 @@
-use std::convert::TryInto;
 use super::md5_constant::{MD5_BUFFER_BYTE_LENGTH, MD5_DIGEST_BYTE_LENGTH, MD5_DATA_BYTE_MAX_LENGTH};
 
 #[inline(always)]
