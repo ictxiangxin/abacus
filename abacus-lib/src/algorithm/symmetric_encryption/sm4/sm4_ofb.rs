@@ -10,7 +10,7 @@ pub fn sm4_ofb_encrypt_data(origin_data: &[u8], key: [u8; KEY_BYTE_LENGTH], iv: 
     let mut enciphered_data: Vec<u8> = Vec::with_capacity(enciphered_data_length);
     enciphered_data.resize(enciphered_data_length, 0);
     for i in 0..block_sum {
-        sm4.encrypt(&key_with_iv, &mut key_with_iv_encrypted);
+        sm4.encrypt_block(&key_with_iv, &mut key_with_iv_encrypted);
         key_with_iv = key_with_iv_encrypted;
         let origin_data_block: &[u8; SM4_BLOCK_BYTE_LENGTH] = (&origin_data[(i * SM4_BLOCK_BYTE_LENGTH)..((i + 1) * SM4_BLOCK_BYTE_LENGTH)]).try_into().unwrap();
         let enciphered_data_block: &mut [u8; SM4_BLOCK_BYTE_LENGTH] = (&mut enciphered_data[(i * SM4_BLOCK_BYTE_LENGTH)..((i + 1) * SM4_BLOCK_BYTE_LENGTH)]).try_into().unwrap();

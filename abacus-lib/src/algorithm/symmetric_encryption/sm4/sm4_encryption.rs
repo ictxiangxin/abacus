@@ -58,76 +58,63 @@ impl SM4Encryption {
     }
 
     pub fn with_key(key: [u8; KEY_BYTE_LENGTH]) -> SM4Encryption {
-        let sm4_key = SM4Encryption::generate_sm4_key(key);
-        let instance = SM4Encryption {
-            key,
-            sm4_key,
-        };
+        let mut instance = SM4Encryption::new();
+        instance.set_key(key);
         instance
     }
 
     pub fn set_key(&mut self, key: [u8; KEY_BYTE_LENGTH]) {
         self.key = key;
-        self.sm4_key = SM4Encryption::generate_sm4_key(key);
+        self.generate_sm4_key();
     }
 
-    pub fn encrypt(&self, origin_data: &[u8; SM4_BLOCK_BYTE_LENGTH], enciphered_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH]) {
-        SM4Encryption::encrypt_block(origin_data, enciphered_data, self.sm4_key)
-    }
-
-    pub fn decrypt(&self, enciphered_data: &[u8; SM4_BLOCK_BYTE_LENGTH], origin_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH]) {
-        SM4Encryption::decrypt_block(enciphered_data, origin_data, self.sm4_key)
-    }
-
-    fn generate_sm4_key(key: [u8; KEY_BYTE_LENGTH]) -> [u32; SM4_KEY_BYTE_LENGTH] {
+    fn generate_sm4_key(&mut self) {
         let mut k: [u32; 4] = [0; 4];
-        let mut sm4_key: [u32; SM4_KEY_BYTE_LENGTH] = [0; SM4_KEY_BYTE_LENGTH];
-        k[0] = big_endian_word(&key, 0) ^ FK[0];
-        k[1] = big_endian_word(&key, 1) ^ FK[1];
-        k[2] = big_endian_word(&key, 2) ^ FK[2];
-        k[3] = big_endian_word(&key, 3) ^ FK[3];
+        k[0] = big_endian_word(&self.key, 0) ^ FK[0];
+        k[1] = big_endian_word(&self.key, 1) ^ FK[1];
+        k[2] = big_endian_word(&self.key, 2) ^ FK[2];
+        k[3] = big_endian_word(&self.key, 3) ^ FK[3];
         for i in 0..SM4_KEY_BYTE_LENGTH {
             let x = k[(i + 1) % 4] ^ k[(i + 2) % 4] ^ k[(i + 3) % 4] ^ CK[i];
             let xx = x.to_be_bytes();
             let t = u32::from_be_bytes([SM4_S[xx[0] as usize], SM4_S[xx[1] as usize], SM4_S[xx[2] as usize], SM4_S[xx[3] as usize]]);
             k[i % 4] ^= t ^ t.rotate_left(13) ^ t.rotate_left(23);
-            sm4_key[i] = k[i % 4];
+            self.sm4_key[i] = k[i % 4];
         }
-        sm4_key
     }
 
-    fn encrypt_block(origin_data: &[u8; SM4_BLOCK_BYTE_LENGTH], enciphered_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH], sm4_key: [u32; SM4_KEY_BYTE_LENGTH]) {
+    pub fn encrypt_block(&self, origin_data: &[u8; SM4_BLOCK_BYTE_LENGTH], enciphered_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH]) {
         let mut w0 = big_endian_word(origin_data, 0);
         let mut w1 = big_endian_word(origin_data, 1);
         let mut w2 = big_endian_word(origin_data, 2);
         let mut w3 = big_endian_word(origin_data, 3);
-        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[00], sm4_key[01], sm4_key[02], sm4_key[03]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[04], sm4_key[05], sm4_key[06], sm4_key[07]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[08], sm4_key[09], sm4_key[10], sm4_key[11]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[12], sm4_key[13], sm4_key[14], sm4_key[15]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[16], sm4_key[17], sm4_key[18], sm4_key[19]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[20], sm4_key[21], sm4_key[22], sm4_key[23]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[24], sm4_key[25], sm4_key[26], sm4_key[27]);
-        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[28], sm4_key[29], sm4_key[30], sm4_key[31]);
+        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[00], self.sm4_key[01], self.sm4_key[02], self.sm4_key[03]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[04], self.sm4_key[05], self.sm4_key[06], self.sm4_key[07]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[08], self.sm4_key[09], self.sm4_key[10], self.sm4_key[11]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[12], self.sm4_key[13], self.sm4_key[14], self.sm4_key[15]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[16], self.sm4_key[17], self.sm4_key[18], self.sm4_key[19]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[20], self.sm4_key[21], self.sm4_key[22], self.sm4_key[23]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[24], self.sm4_key[25], self.sm4_key[26], self.sm4_key[27]);
+        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[28], self.sm4_key[29], self.sm4_key[30], self.sm4_key[31]);
         big_endian_bytes(w3, enciphered_data, 0);
         big_endian_bytes(w2, enciphered_data, 1);
         big_endian_bytes(w1, enciphered_data, 2);
         big_endian_bytes(w0, enciphered_data, 3);
     }
 
-    fn decrypt_block(enciphered_data: &[u8; SM4_BLOCK_BYTE_LENGTH], origin_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH], sm4_key: [u32; SM4_KEY_BYTE_LENGTH]) {
+    pub fn decrypt_block(&self, enciphered_data: &[u8; SM4_BLOCK_BYTE_LENGTH], origin_data: &mut [u8; SM4_BLOCK_BYTE_LENGTH]) {
         let mut w0 = big_endian_word(enciphered_data, 0);
         let mut w1 = big_endian_word(enciphered_data, 1);
         let mut w2 = big_endian_word(enciphered_data, 2);
         let mut w3 = big_endian_word(enciphered_data, 3);
-        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[31], sm4_key[30], sm4_key[29], sm4_key[28]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[27], sm4_key[26], sm4_key[25], sm4_key[24]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[23], sm4_key[22], sm4_key[21], sm4_key[20]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[19], sm4_key[18], sm4_key[17], sm4_key[16]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[15], sm4_key[14], sm4_key[13], sm4_key[12]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[11], sm4_key[10], sm4_key[09], sm4_key[08]);
-        round_main(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[07], sm4_key[06], sm4_key[05], sm4_key[04]);
-        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, sm4_key[03], sm4_key[02], sm4_key[01], sm4_key[00]);
+        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[31], self.sm4_key[30], self.sm4_key[29], self.sm4_key[28]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[27], self.sm4_key[26], self.sm4_key[25], self.sm4_key[24]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[23], self.sm4_key[22], self.sm4_key[21], self.sm4_key[20]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[19], self.sm4_key[18], self.sm4_key[17], self.sm4_key[16]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[15], self.sm4_key[14], self.sm4_key[13], self.sm4_key[12]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[11], self.sm4_key[10], self.sm4_key[09], self.sm4_key[08]);
+        round_main(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[07], self.sm4_key[06], self.sm4_key[05], self.sm4_key[04]);
+        round_edge(&mut w0, &mut w1, &mut w2, &mut w3, self.sm4_key[03], self.sm4_key[02], self.sm4_key[01], self.sm4_key[00]);
         big_endian_bytes(w3, origin_data, 0);
         big_endian_bytes(w2, origin_data, 1);
         big_endian_bytes(w1, origin_data, 2);

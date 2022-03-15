@@ -14,7 +14,7 @@ pub fn sm4_cbc_encrypt_data(origin_data: &[u8], key: [u8; KEY_BYTE_LENGTH], iv: 
             origin_data_block_with_iv[j] = origin_data_block[j] ^ origin_data_block_with_iv[j];
         }
         let enciphered_data_block: &mut [u8; SM4_BLOCK_BYTE_LENGTH] = (&mut enciphered_data[(i * SM4_BLOCK_BYTE_LENGTH)..((i + 1) * SM4_BLOCK_BYTE_LENGTH)]).try_into().unwrap();
-        sm4.encrypt(&origin_data_block_with_iv, enciphered_data_block);
+        sm4.encrypt_block(&origin_data_block_with_iv, enciphered_data_block);
         origin_data_block_with_iv = *enciphered_data_block;
     }
     enciphered_data
@@ -30,7 +30,7 @@ pub fn sm4_cbc_decrypt_data(enciphered_data: &[u8], key: [u8; KEY_BYTE_LENGTH], 
     for i in 0..block_sum {
         let enciphered_data_block: &[u8; SM4_BLOCK_BYTE_LENGTH] = (&enciphered_data[(i * SM4_BLOCK_BYTE_LENGTH)..((i + 1) * SM4_BLOCK_BYTE_LENGTH)]).try_into().unwrap();
         let origin_data_block: &mut [u8; SM4_BLOCK_BYTE_LENGTH] = (&mut origin_data[(i * SM4_BLOCK_BYTE_LENGTH)..((i + 1) * SM4_BLOCK_BYTE_LENGTH)]).try_into().unwrap();
-        sm4.decrypt(enciphered_data_block, origin_data_block);
+        sm4.decrypt_block(enciphered_data_block, origin_data_block);
         for j in 0..SM4_BLOCK_BYTE_LENGTH {
             origin_data_block[j] = origin_data_block[j] ^ enciphered_data_block_with_iv[j];
         }
